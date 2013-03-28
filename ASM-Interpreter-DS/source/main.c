@@ -215,6 +215,10 @@ int main(void)
 		iprintf(".");
 		// If there is, load it as the program.
 		loadProgram(false, fileBuffer);
+		// Free the file buffer now that we are done using it, and
+		// set it to NULL.
+		free(fileBuffer);
+		fileBuffer = NULL;
 		iprintf(".");
 	}
 	else
