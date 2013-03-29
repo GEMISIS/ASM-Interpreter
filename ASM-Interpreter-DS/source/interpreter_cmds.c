@@ -505,7 +505,7 @@ int runCommand(bool showDebug, char cmd[MAX_CMD_LEN], char args[MAX_ARGS][MAX_AR
 		if(!strcmp(cmd, "mov"))
 		{
 			// Then call the copy command with those values since mov and copy are the same here.
-			copy(r1, r2);
+			copy(r2, r1);
 		}
 		// Check if the command is the copy command.
 		if(!strcmp(cmd, "copy"))
