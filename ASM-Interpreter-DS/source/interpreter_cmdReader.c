@@ -71,7 +71,7 @@ int ValidateAndStoreCommand(char cmd[MAX_CMD_LEN], char args[MAX_ARGS][MAX_ARG_L
 		// Check if the command is a valid command.
 		if(!strcmp(cmd, "add") || !strcmp(cmd, "sub") || !strcmp(cmd, "mul")
 			|| !strcmp(cmd, "div") || !strcmp(cmd, "mod") || !strcmp(cmd, "copy")
-			|| !strcmp(cmd, "cmp"))
+			|| !strcmp(cmd, "cmp") || !strcmp(cmd, "mov"))
 		{
 			// Add the command to the list of commands.
 			addCommandToList(cmd, args);
@@ -81,7 +81,7 @@ int ValidateAndStoreCommand(char cmd[MAX_CMD_LEN], char args[MAX_ARGS][MAX_ARG_L
 	else if(((args[0][0] == 'r') || (args[0][0] == 'a')) && args[1][0] != 0)
 	{
 		// Check if the command is valid command.
-		if(!strcmp(cmd, "set") || !strcmp(cmd, "jeq") || !strcmp(cmd, "jne"))
+		if(!strcmp(cmd, "set") || !strcmp(cmd, "mov") || !strcmp(cmd, "jeq") || !strcmp(cmd, "jne"))
 		{
 			// Add the command to the list of commands.
 			addCommandToList(cmd, args);

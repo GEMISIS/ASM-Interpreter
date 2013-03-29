@@ -501,6 +501,12 @@ int runCommand(bool showDebug, char cmd[MAX_CMD_LEN], char args[MAX_ARGS][MAX_AR
 			// Then call the mod command with those values.
 			mod(r1, r2);
 		}
+		// Check if the command is the mov command.
+		if(!strcmp(cmd, "mov"))
+		{
+			// Then call the copy command with those values since mov and copy are the same here.
+			copy(r1, r2);
+		}
 		// Check if the command is the copy command.
 		if(!strcmp(cmd, "copy"))
 		{
@@ -522,8 +528,39 @@ int runCommand(bool showDebug, char cmd[MAX_CMD_LEN], char args[MAX_ARGS][MAX_AR
 		// Check if the command is the set command.
 		if(!strcmp(cmd, "set"))
 		{
-			int value = atoi(args[1]);
+			int value = 0;
+			// Check if there is a number sign as
+			// the first character in argument 1.
+			if(args[1][0] == '#')
+			{
+				// If so, use sscanf with # first.
+				sscanf(args[1], "#%d", &value);
+			}
+			else
+			{
+				// Otherwise, use sscanf without # first.
+				sscanf(args[1], "%d", &value);
+			}
 			// Then call the set command with those values.
+			set(r1, value);
+		}
+		// Check if the command is the mov command.
+		if(!strcmp(cmd, "mov"))
+		{
+			int value = 0;
+			// Check if there is a number sign as
+			// the first character in argument 1.
+			if(args[1][0] == '#')
+			{
+				// If so, use sscanf with # first.
+				sscanf(args[1], "#%d", &value);
+			}
+			else
+			{
+				// Otherwise, use sscanf without # first.
+				sscanf(args[1], "%d", &value);
+			}
+			// Then call the set command with those values since mov and set are the same here.
 			set(r1, value);
 		}
 		// Check if the command is the set command.
