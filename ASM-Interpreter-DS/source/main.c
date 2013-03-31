@@ -4,134 +4,55 @@
 
 // Include functions for file I/O
 #include "fileIO.h"
+
 // Include functions for the interpreter.
-#include "interpreter_cmdReader.h"
+#include "interpreter_debugPrinter.h"
 
 // A test file for when the file system can't be initialized.
 #include "test_asm.h"
 
-// The border to display on the top screen.
-const char topScreenBorderText[] = {
-	"--------------------------------"
-	"|                              |"
-	"|                              |"
-	"|                              |"
-	"|                              |"
-	"|                              |"
-	"|                              |"
-	"|                              |"
-	"|                              |"
-	"|                              |"
-	"|                              |"
-	"--------------------------------"
-	"|                              |"
-	"|                              |"
-	"|                              |"
-	"|                              |"
-	"|                              |"
-	"|                              |"
-	"|                              |"
-	"|                              |"
-	"|                              |"
-	"|                              |"
-	"|                              |"
-	"--------------------------------"
-};
+// Set the max length of a file name.
+#define MAX_CUST_FILE_NAME_LEN 512
+
+// The maximum length of the arguments for running a file.
+#define MAX_CUST_FILE_ARGS_LEN 512
 
 // Create a top screen and bottom screen console for text.
-PrintConsole topScreenBorder, topScreenPC, topScreenMemory, topScreenRegisters, bottomScreen;
+PrintConsole topScreen, bottomScreen;
 
-void printTopScreenBorder()
+int main(int argc, char* argv[])
 {
-	// Select the top console.
-	consoleSelect(&topScreenBorder);
-	// Clear the text.
-	consoleClear();
+	// The name of the file to load.
+	char* fileName = "test.asm";
 
-	// Print the border to the screen.
-	iprintf("\x1b[%d;%dH%s", 0, 0, topScreenBorderText);
-
-	// Select the bottom console.
-	consoleSelect(&bottomScreen);
-}
-
-void printfSystemInfo()
-{
-	// Select the top console's memory section.
-	consoleSelect(&topScreenMemory);
-	// Clear the console.
-	consoleClear();
-	// Print the Memory title.
-	iprintf("\x1b[%d;%dH%s", 0, 32 / 2 - 4, "Memory");
-	// Position the cursor to 0, 1.
-	iprintf("\x1b[%d;%dH", 2, 0);
-	// Create a foor loop variable.
-	int i = 0;
-	// Loop through all of the memory.
-	for(i = 0;i < MAX_MEM;i += 1)
+	// Check if an argument was passed to the application.
+	if(argc > 1)
 	{
-		// Check if 5 memory cells are displayed
-		if(i != 0 && i % 5 == 0)
-		{
-			// If so, print the next one on a new line.
-			iprintf("\n\nM%d:%d\t", i + 1, memory[i]);
-		}
-		else
-		{
-			// Otherwise, just print out the memory cell.
-			iprintf("M%d:%d\t", i, memory[i]);
-		}
+		// If so, get the length of the argument.
+		int nameLength = strlen(argv[1]) < MAX_CUST_FILE_NAME_LEN ? strlen(argv[1]) : MAX_CUST_FILE_NAME_LEN;
+		// Then, allocate memory for the name of the file. (Size of the string + 1 for
+		// the null terminated character at the end.
+		fileName = (char*)malloc((nameLength + 1) * sizeof(char));
+		// Copy the argument to the file name string.
+		strncpy(fileName, argv[1], nameLength);
+		// Set the last character to be null terminated.
+		fileName[nameLength] = '\0';
 	}
 
-	// Select the top console's registers section.
-	consoleSelect(&topScreenRegisters);
-	// Clear the console.
-	consoleClear();
-	// Print the Registers title.
-	iprintf("\x1b[%d;%dH%s", 0, 32 / 2 - 6, "Registers");
-	// Position the cursor to 0, 1.
-	iprintf("\x1b[%d;%dH", 2, 0);
-	// Loop through all of the registers.
-	for(i = 0;i < MAX_REG;i += 1)
+	// Check if another argument was passed to the application.
+	if(argc > 2)
 	{
-		// Check if 5 registers are displayed
-		if(i != 0 && i % 5 == 0)
-		{
-			// If so, print the next one on a new line.
-			iprintf("\n\nR%d:%d\t", i + 1, registers[i]);
-		}
-		else
-		{
-			// Otherwise, just print out the register.
-			iprintf("R%d:%d\t", i, registers[i]);
-		}
-	}
-	// Check if 5 registers are displayed
-	if(i != 0 && i % 5 == 0)
-	{
-		// If so, print the accumulator on a new line.
-		iprintf("\n\nAC:%d\t", reg_ac);
-	}
-	else
-	{
-		// Otherwise, just print out the accumulator.
-		iprintf("AC:%d\t", reg_ac);
+		// If so, get the length of the argument.
+		int argsLength = strlen(argv[2]) < MAX_CUST_FILE_ARGS_LEN ? strlen(argv[2]) : MAX_CUST_FILE_ARGS_LEN;
+		// Then, allocate memory for the name of the file. (Size of the string + 1 for
+		// the null terminated character at the end.
+		stringInput = (char*)malloc((argsLength + 1) * sizeof(char));
+		// Copy the argument to the file name string.
+		strncpy(stringInput, argv[2], argsLength);
+		// Set the last character to be null terminated.
+		stringInput[argsLength] = '\0';
 	}
 
-	// Select the top console's program counter section.
-	consoleSelect(&topScreenPC);
-	// Clear the console.
-	consoleClear();
-	// Print the program counter.
-	iprintf("\x1b[%d;%dH%s%d", 0, 0, "PC: ", pc);
-
-
-	// Select the bottom console.
-	consoleSelect(&bottomScreen);
-}
-
-int main(void)
-{
 	// Set the video mode for the top screen.
     videoSetMode(MODE_0_2D);
 	// Set the video mode for the bottom screen.
@@ -142,27 +63,22 @@ int main(void)
 	// Allocate video ram for the bottom screen's text.
     vramSetBankC(VRAM_C_SUB_BG);
 
-	// Initialize the top screen's border text console.
-	consoleInit(&topScreenBorder, 0, BgType_Text4bpp, BgSize_T_256x256, 31, 0, true, true);
-	// Initialize the top screen's program counter text console.
-	consoleInit(&topScreenPC, 1, BgType_Text4bpp, BgSize_T_256x256, 31, 0, true, true);
-	// Initialize the top screen's memory text console.
-	consoleInit(&topScreenMemory, 2, BgType_Text4bpp, BgSize_T_256x256, 31, 0, true, true);
-	// Initialize the top screen's registers text console.
-	consoleInit(&topScreenRegisters, 3, BgType_Text4bpp, BgSize_T_256x256, 31, 0, true, true);
+	// Initialize the debug printer.
+	initDebugPrinter();
 
-	// Set the border console's window position and size.
-	consoleSetWindow(&topScreenBorder, 0, 0, 32, 24);
-	// Set the program counter console's window position and size.
-	consoleSetWindow(&topScreenPC, 1, 1, 10, 2);
-	// Set the memory console's window position and size.
-	consoleSetWindow(&topScreenMemory, 1, 1, 32 - 2, 24 / 2 - 2);
-	// Set the registers console's window position and size.
-	consoleSetWindow(&topScreenRegisters, 1, 24 / 2 + 1, 32 - 2, 24 / 2 - 2);
+	// Initialize the top screen's text console.
+	consoleInit(&topScreen, 0, BgType_Text4bpp, BgSize_T_256x256, 31, 0, true, true);
 
 	// Initialize the bottom screen's text console.
 	consoleInit(&bottomScreen, 2, BgType_Text4bpp, BgSize_T_256x256, 8, 6, false, true);
 
+	// Set the border console's window position and size.
+	consoleSetWindow(&topScreen, 1, 1, 32 - 2, 24 / 2 - 2);
+
+	// Set the bottom screen console's window position and size.
+	consoleSetWindow(&bottomScreen, 0, 0, 32, 14);
+
+	// Initialize the keyboard.
 	keyboardInit(NULL, 0, BgType_Text4bpp, BgSize_T_256x256, 0, 2, false, true);
 
 	// Select the bottom console.
@@ -170,6 +86,278 @@ int main(void)
 
 	// Print the border for the top screen.
 	printTopScreenBorder();
+
+	// Select the bottom console.
+	consoleSelect(&bottomScreen);
+
+	// Show the on-screen keyboard.
+	keyboardShow();
+
+	// Ask the user if they would like to type a file name
+	// and state the commands for doing so.
+	iprintf("Would you like to\n");
+	iprintf("type in a file name?\n");
+	iprintf("A for Yes and B for No\n");
+
+	// Wait for the B button to be pressed.
+	while(!(keysDown() & KEY_B))
+	{
+		// Scan the keypad.
+		scanKeys();
+
+		// Check if the A button was pressed.
+		if(keysDown() & KEY_A)
+		{
+			// If so, print out the next bit of info for
+			// giving a file name.
+			iprintf("Max file name length is\n");
+			iprintf("%d characters.\n", MAX_CUST_FILE_NAME_LEN);
+			iprintf("Press Enter when done\n");
+
+			// Get the character from the keyboard.
+			int character = 0;
+
+			// Allocate memory for the file name again.
+			fileName = (char*)malloc((MAX_CUST_FILE_NAME_LEN + 1) * sizeof(char)); 
+
+			// Create a cursor for typing the file name.
+			int position = 0;
+
+			// Set the first character to be null terminated
+			// so that it prints out properly.
+			fileName[position] = '\0';
+
+			// Select the top console's memory section.
+			consoleSelect(&topScreen);
+
+			// Wait while the character is not negative or the file name length
+			// is greater than MAX_CUST_FILE_NAME_LEN.
+			while((character > -2 || character == -20 || character == -18) && position < MAX_CUST_FILE_NAME_LEN)
+			{
+				// Clear the console.
+				consoleClear();
+
+				// Set the position to print at.
+				iprintf("\x1b[%d;%dH", 0, 0);
+
+				// Get the next character on the keyboard.
+				character = keyboardUpdate();
+
+				// Wait for the newline character specifically.
+				if(character == '\n')
+				{
+					// If newline character was found, break out of the loop.
+					break;
+				}
+				// Check if the character is greater than 0.
+				else if(character > 0)
+				{
+					if(fileName[position] == '\0')
+					{
+						// Set the last character to be null terminated.
+						fileName[position + 1] = '\0';
+					}
+					// Set the current character to the typed character.
+					fileName[position] = character;
+					// Check if the character is the backspace character.
+					if(character == 8)
+					{
+						// Set the current letter to be null terminated.
+						fileName[position] = '\0';
+						// Also, decrement the cursor position by 1.
+						position -= 1;
+						// And set that letter to be null terminated.
+						fileName[position] = '\0';
+					}
+					else
+					{
+						// Otherwise, increment the cursor position by 1.
+						position += 1;
+					}
+				}
+
+				// Check for a left key press or left arrow key on
+				// the keyboard.
+				if(character == -20 || (keysDown() & KEY_LEFT))
+				{
+					// Check that the position is greater than 0.
+					if(position > 0)
+					{
+						// If so, decrement the cursor position by 1.
+						position -= 1;
+					}
+				}
+				// Check for a right key press or right arrow key on
+				// the keyboard.
+				if(character == -18 || (keysDown() & KEY_RIGHT))
+				{
+					// Check that the current character is not the null
+					// terminated character (aka, the last one).
+					if(fileName[position] != '\0')
+					{
+						// If so, increment the cursor position by 1.
+						position += 1;
+					}
+				}
+				// Print the file name.
+				iprintf("%s", fileName);
+
+				//iprintf("\x1b[%d;%dH", 0, position);
+				//iprintf("|");
+				// Wait for the next vertical blank update.
+				swiWaitForVBlank();
+			}
+
+			// Clear the console for use.
+			consoleClear();
+			
+			// Select the bottom console.
+			consoleSelect(&bottomScreen);
+
+			break;
+		}
+		swiWaitForVBlank();
+	}
+
+	// Clear the console of old text.
+	consoleClear();
+
+	// Scan again for key input to clear the old input.
+	scanKeys();
+
+	// Ask the user if they would like to type a file name
+	// and state the commands for doing so.
+	iprintf("Would you like to\n");
+	iprintf("type in a file args?\n");
+	iprintf("A for Yes and B for No\n");
+
+	// Wait for the B button to be pressed.
+	while(!(keysDown() & KEY_B))
+	{
+		// Scan the keypad.
+		scanKeys();
+
+		// Check if the A button was pressed.
+		if(keysDown() & KEY_A)
+		{
+			// If so, print out the next bit of info for
+			// giving a file name.
+			iprintf("Max file name length is\n");
+			iprintf("%d characters.\n", MAX_CUST_FILE_ARGS_LEN);
+			iprintf("Press the close tab when done\n");
+
+			// Get the character from the keyboard.
+			int character = 0;
+
+			// Allocate memory for the file name again.
+			stringInput = (char*)malloc((MAX_CUST_FILE_ARGS_LEN + 1) * sizeof(char)); 
+
+			// Create a cursor for typing the file name.
+			int position = 0;
+
+			// Set the first character to be null terminated
+			// so that it prints out properly.
+			stringInput[position] = '\0';
+
+			// Select the top console's memory section.
+			consoleSelect(&topScreen);
+
+			// The Y position of the cursor since arguments can have newlines.
+			int cursor_Y = 0;
+
+			// Wait while the character is not negative or the file name length
+			// is greater than MAX_CUST_FILE_NAME_LEN.
+			while((character > -2 || character == -20 || character == -18) && position < MAX_CUST_FILE_ARGS_LEN)
+			{
+				// Clear the console.
+				consoleClear();
+
+				// Set the position to print at.
+				iprintf("\x1b[%d;%dH", 0, 0);
+
+				// Get the next character on the keyboard.
+				character = keyboardUpdate();
+
+				// Check if the character is greater than 0.
+				if(character > 0)
+				{
+					if(stringInput[position] == '\0')
+					{
+						// Set the last character to be null terminated.
+						stringInput[position + 1] = '\0';
+					}
+					// Set the current character to the typed character.
+					stringInput[position] = character;
+					// Check if the character is the backspace character.
+					if(character == 8)
+					{
+						// Set the current letter to be null terminated.
+						stringInput[position] = '\0';
+						// Also, decrement the cursor position by 1.
+						position -= 1;
+						// And set that letter to be null terminated.
+						stringInput[position] = '\0';
+					}
+					else
+					{
+						// Otherwise, increment the cursor position by 1.
+						position += 1;
+					}
+
+					// Check for a newline character.
+					if(character == '\n')
+					{
+						// Increment the Y position of the cursor.
+						cursor_Y += 1;
+					}
+				}
+
+				// Check for a left key press or left arrow key on
+				// the keyboard.
+				if(character == -20 || (keysDown() & KEY_LEFT))
+				{
+					// Check that the position is greater than 0.
+					if(position > 0)
+					{
+						// If so, decrement the cursor position by 1.
+						position -= 1;
+					}
+				}
+				// Check for a right key press or right arrow key on
+				// the keyboard.
+				if(character == -18 || (keysDown() & KEY_RIGHT))
+				{
+					// Check that the current character is not the null
+					// terminated character (aka, the last one).
+					if(stringInput[position] != '\0')
+					{
+						// If so, increment the cursor position by 1.
+						position += 1;
+					}
+				}
+
+				// Print the file name.
+				iprintf("%s", stringInput);
+
+				//iprintf("\x1b[%d;%dH", 0, position);
+				//iprintf("|");
+				// Wait for the next vertical blank update.
+				swiWaitForVBlank();
+			}
+
+			// Clear the console for use.
+			consoleClear();
+			
+			// Select the bottom console.
+			consoleSelect(&bottomScreen);
+
+			break;
+		}
+		swiWaitForVBlank();
+	}
+
+	// Clear the console of old text.
+	consoleClear();
 
 	// Print out that the file system is being intialized.
 	iprintf("Initializing file I/O.");
@@ -205,7 +393,7 @@ int main(void)
 	char* fileBuffer = NULL;
 
 	// Load a test file to the file buffer.
-	loadFile("test.asm", &fileBuffer);
+	loadFile(fileName, &fileBuffer);
 
 	iprintf(".");
 
@@ -243,7 +431,10 @@ int main(void)
 		if(!play)
 		{
 			// Print the information about the system currently.
-			printfSystemInfo();
+			printInterpreterSystemInfo();
+
+			// Select the bottom console.
+			consoleSelect(&bottomScreen);
 
 			// If so, wait for a veritcal blank and scan for key presses.
 			swiWaitForVBlank();
@@ -285,7 +476,10 @@ int main(void)
 		}
 	}
 	// Print the information about the system currently.
-	printfSystemInfo();
+	printInterpreterSystemInfo();
+
+	// Select the bottom console.
+	consoleSelect(&bottomScreen);
 
 	// Print that the program finished running.
 	printf("Finished running!\n\n");

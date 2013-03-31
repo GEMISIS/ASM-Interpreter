@@ -1,5 +1,9 @@
 #include "interpreter_cmds.h"
 
+// The string for the getCMethod.  This string can be used in place of needing
+// keyboard input.
+char* stringInput = NULL;
+
 // The program counter.
 unsigned int pc = 0;
 // The accumulator register.
@@ -350,8 +354,19 @@ void getcFunc(int r1)
 	// The character to return.
 	int character = -1;
 
-	// Show the on-screen keyboard.
-	keyboardShow();
+	if(stringInput != NULL)
+	{
+		character = stringInput[0];
+		stringInput += 1;
+		if(character == '\0')
+		{
+			character = -1;
+			stringInput = NULL;
+		}
+		registers[r1] = character;
+		return;
+	}
+
 	// Check whether a key has been pressed.
 	while(character == -1)
 	{
@@ -366,8 +381,7 @@ void getcFunc(int r1)
 		// If so, set the character to -1.
 		character = -1;
 	}
-	// Hide the keyboard.
-	keyboardHide();
+
 	// Print the character that was typed.
 	iprintf("%c\n", character);
 	// Set the register to the character.

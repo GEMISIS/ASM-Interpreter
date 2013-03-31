@@ -24,6 +24,10 @@ extern "C"
 // The max number of memory locations available.
 #define MAX_MEM 15
 
+// The string for the getCMethod.  This string can be used in place of needing
+// keyboard input.
+extern char* stringInput;
+
 // The program counter.
 extern unsigned int pc;
 // The accumulator register.

@@ -4,7 +4,7 @@ main:
 	set r1, -1
 
 	// Set the line count to 0.
-	set r2, 0
+	set r2, 1
 	// Set the word count to 0.
 	set r3, 0
 	// Set the character count to 0.
