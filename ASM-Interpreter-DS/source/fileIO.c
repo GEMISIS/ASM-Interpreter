@@ -50,3 +50,4 @@ unsigned int loadFile(const char* fileName, char** fileBuffer)
 	return -1;
 }
 
+

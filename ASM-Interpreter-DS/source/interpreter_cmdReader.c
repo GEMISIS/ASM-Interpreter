@@ -140,7 +140,23 @@ int loadProgram(bool showDebug, char* program)
 	enum interpreterState_t state = CMD;
 
 	// The for loop variable for looping through arguments.
-	int j = 0;
+	int i = 0, j = 0, k = 0;
+
+	pc = 0;
+	for(i = 0;i < MAX_COMMANDS;i += 1)
+	{
+		for(j = 0;j < MAX_CMD_LEN;j += 1)
+		{
+			commands[i].cmd[j] = 0;
+		}
+		for(j = 0;j < MAX_ARGS;j += 1)
+		{
+			for(k = 0;k < MAX_ARG_LEN;k += 1)
+			{
+				commands[i].args[j][k] = 0;
+			}
+		}
+	}
 
 	// Set the command to be empty.
 	memset(cmd, '\0', MAX_CMD_LEN);
