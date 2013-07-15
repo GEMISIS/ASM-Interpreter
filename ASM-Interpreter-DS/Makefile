@@ -19,6 +19,7 @@ TARGET		:=	$(shell basename $(CURDIR))
 BUILD		:=	build
 SOURCES		:=	source
 DATA		:=	data
+GRAPHICS	:=	gfx
 INCLUDES	:=	include
 NITRODATA	:=	nitrofiles
 
@@ -30,6 +31,7 @@ ARCH	:=	-mthumb -mthumb-interwork -march=armv5te -mtune=arm946e-s
 CFLAGS	:=	-g -Wall -O2\
  		-fomit-frame-pointer\
 		-ffast-math \
+		-std=gnu99 \
 		$(ARCH)
 
 CFLAGS	+=	$(INCLUDE) -DARM9
@@ -60,7 +62,8 @@ ifneq ($(BUILD),$(notdir $(CURDIR)))
 export OUTPUT	:=	$(CURDIR)/$(TARGET)
 
 export VPATH	:=	$(foreach dir,$(SOURCES),$(CURDIR)/$(dir)) \
-					$(foreach dir,$(DATA),$(CURDIR)/$(dir))
+					$(foreach dir,$(DATA),$(CURDIR)/$(dir))	\
+					$(foreach dir,$(GRAPHICS),$(CURDIR)/$(dir))
 
 export DEPSDIR	:=	$(CURDIR)/$(BUILD)
 
@@ -73,6 +76,7 @@ CPPFILES	:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.cpp)))
 SFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.s)))
 BINFILES	:=	$(foreach dir,$(DATA),$(notdir $(wildcard $(dir)/*.*)))
 ASMFILES	:=	$(foreach dir,$(DATA),$(notdir $(wildcard $(dir)/*.asm)))
+PNGFILES	:=	$(foreach dir,$(GRAPHICS),$(notdir $(wildcard $(dir)/*.png)))
  
 #---------------------------------------------------------------------------------
 # use CXX for linking C++ projects, CC for standard C
@@ -89,7 +93,8 @@ endif
 #---------------------------------------------------------------------------------
 
 export OFILES	:=	$(addsuffix .o,$(BINFILES)) \
-			$(CPPFILES:.cpp=.o) $(CFILES:.c=.o) $(SFILES:.s=.o)
+					$(PNGFILES:.png=.o) \
+					$(CPPFILES:.cpp=.o) $(CFILES:.c=.o) $(SFILES:.s=.o)
  
 export INCLUDE	:=	$(foreach dir,$(INCLUDES),-I$(CURDIR)/$(dir)) \
 			$(foreach dir,$(LIBDIRS),-I$(dir)/include) \
@@ -125,11 +130,16 @@ $(OUTPUT).elf	:	$(OFILES)
 	$(bin2o)
  
 #---------------------------------------------------------------------------------
+%.s %.h	: %.png %.grit
+#---------------------------------------------------------------------------------
+	grit $< -fts -o$*
+ 
+#---------------------------------------------------------------------------------
 %.asm.o	:	%.asm
 #---------------------------------------------------------------------------------
 	@echo $(notdir $<)
 	$(bin2o)
- 
+
 -include $(DEPSDIR)/*.d
  
 #---------------------------------------------------------------------------------------

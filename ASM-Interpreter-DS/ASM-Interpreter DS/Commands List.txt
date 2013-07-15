@@ -1,0 +1,20 @@
+add reg1, reg2 - Adds 2 registers and stores the results in AC. Example: add r1, r2
+sub reg1, reg2 - Subtracts reg2 from reg1 and stores the results in AC. Example: sub r1, r2
+mul reg1, reg2 - Multiplies reg1 and reg2 and stores the results in AC. Example: mul r1, r2
+div reg1, reg2 - Divides reg1 by reg2 and stores the results in AC. Example: div r1, r2
+mod reg1, reg2 - Performs the modulus function on reg1 with reg2 and stores the results in AC. Example: mod r1, r2
+store mem1, reg1 - Stores reg1 in mem1. Example: store m1, r1
+load reg1, mem1 - Loads reg1 with mem1. Example: load r1, m1
+copy reg1, reg2 - Copies reg1 to reg2. Example: copy r1, r2
+jmp label - Jumps to the chosen label. (label needs quotes around it) Example: jmp "labeltitle"
+set reg1, val - Sets reg1 with the value val. Example: set r1, 42
+jne reg1, label - Jumps to the label if reg1 does not equal AC. (label needs quotes around it) Example: jne r1, "labeltitle"
+jeq reg1, label - Jumps to the label if reg1 equals AC. (label needs quotes around it) Example: jeq r1, "labeltitle"
+cmp reg1, reg2 - Compares reg1 and reg2 and stores the results in AC. (0 if equal, -1 if reg1 < reg2, and 1 if reg2 > reg1) Example: cmp r1, r2
+print reg - Prints the register as an integer value. Example: print r1
+printc reg - Prints the register as a character value Example: print r1
+getc reg - Gets a character from the keyboard and stores it in the register. Example: getc r1
+mov reg1, reg2 - Moves register 2's value to register 1. Example: mov r1, r2
+mov reg1, #N - Moves value N to register 1. Example: mov r1, #0xff
+labels are defined with a colon at the end (no spaces between). Example: labeltitle:
+A # sign can be prefixed to all number values.
