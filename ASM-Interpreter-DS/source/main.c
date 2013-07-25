@@ -9,9 +9,24 @@
 #include "test_asm.h"
 
 /*
+ * Allows the user to type a file on the Nintendo DS.
+ */
+void CreateProgram(char* fileName);
+/*
  * This method actually runs the Nintendo DS program.
  */
 void RunProgram(char* fileName, char* stringInput);
+
+/*
+ * The main program that is running for the DS.
+ * This manages what is going on within the application.
+ */
+void mainProgramLoop(char* fileName);
+
+/*
+ * The status of the application currently.
+ */
+int applicationStatus = 0;
 
 int main(int argc, char* argv[])
 {
@@ -49,40 +64,131 @@ int main(int argc, char* argv[])
 	// Initialize the Nintendo DS system.
 	initializeSystem();
 
-	// Now run the program at least once.
-	RunProgram(fileName, stringInput);
-
-	// Tell the user their options now that the program has run its course.
-	iprintf("Press A to run a new file or Start to quit.");
-
 	// Go into an infinite loop now.
 	while(1)
 	{
-		// Wait for the start key to be pressed and then end the program.
-		swiWaitForVBlank();
-		// Scan the keyboard keys.
-		scanKeys();
-		// Check if the start button is being pressed.
-		if(keysDown() & KEY_START)
-		{
-			// If so, break out of this loop.
-			break;
-		}
-		// Check if the A button is being pressed.
-		if(keysDown() & KEY_A)
-		{
-			consoleClear();
-			// Then run the program again.
-			RunProgram(fileName, stringInput);
-			
-			// Tell the user their options now that the program has run its course.
-			iprintf("Press A to run a new file or Start to quit.");
-		}
+		// Loop the main program.
+		mainProgramLoop(fileName);
 	}
 
 	// Exit out of the program.
 	exit(0);
 	return 0;
+}
+
+void mainProgramLoop(char* fileName)
+{
+	// Prompt the user to run or create a program.
+	iprintf("Press A to run a program\nPress B to create a program\nPress Start to exit.");
+
+	while(1)
+	{
+		// Wait for the vertical blank update.
+		swiWaitForVBlank();
+		// Scan the keyboard keys.
+		scanKeys();
+
+		// Check if the A button is being pressed.
+		if(keysDown() & KEY_A)
+		{
+			applicationStatus = 0;
+			// If so, break out of this loop.
+			break;
+		}
+		// Check if the B button is being pressed.
+		if(keysDown() & KEY_B)
+		{
+			applicationStatus = 1;
+			// If so, break out of this loop.
+			break;
+		}
+		if(keysDown() & KEY_START)
+		{
+			applicationStatus = -1;
+			// If so, break out of this loop.
+			break;
+		}
+	}
+
+	// Clear the old text from the console.
+	consoleClear();
+	// Clear the old keys status.
+	scanKeys();
+
+	// Switch the possible program states.
+	switch(applicationStatus)
+	{
+	case 0:
+		// Run the program at least once.
+		RunProgram(fileName, stringInput);
+		break;
+	case 1:
+		// Create a new program.
+		CreateProgram(fileName);
+		break;
+	default:
+		// Exit the application.
+		exit(0);
+		return;
+	}
+}
+
+/*
+ * Allows the user to type a file on the Nintendo DS.
+ */
+void CreateProgram(char* fileName)
+{
+	// Select the top console's registers section.
+	consoleSelect(&topScreenRegisters);
+	// Prompt for a file name.
+	iprintf("Please enter a file name\n\n");
+	iprintf("Max file name length is\n");
+	iprintf("%d characters.\n", MAX_CUST_FILE_ARGS_LEN);
+	iprintf("Press the close tab when done\n");
+	// Allocate memory for the file name.
+	fileName = (char*)malloc((MAX_CUST_FILE_ARGS_LEN + 1) * sizeof(char));
+	// Get the name of the file.
+	getKeyboardInput(&fileName, MAX_CUST_FILE_ARGS_LEN, false);
+	// Check if the file name is valid.
+	while(!strcmp(fileName, "\0"))
+	{
+		// Get the name of the file.
+		getKeyboardInput(&fileName, MAX_CUST_FILE_ARGS_LEN, false);
+	}
+	// Scan for keys to get rid of old inputs.
+	scanKeys();
+	// Clear the console of old text.
+	consoleClear();
+
+	// Select the bottom console.
+	consoleSelect(&bottomScreen);
+
+	// Display the current file name.
+	iprintf("Current File Name: %s\n", fileName);
+
+	// Create a buffer for the file's data.
+	char* fileBuffer = (char*)malloc(512 * sizeof(char));
+	// Get the input for the file data.
+	getKeyboardInput(&fileBuffer, 512, true);
+	// Finally, save the file to the system.
+	saveFile(fileName, &fileBuffer);
+	// Clear the console.
+	consoleClear();
+
+	// Select the top console's registers section.
+	consoleSelect(&topScreenRegisters);
+	// Then clear the console.
+	consoleClear();
+
+	// Select the top console's registers section.
+	consoleSelect(&topScreenMemory);
+	// Then clear the console.
+	consoleClear();
+
+	// Select the bottom console.
+	consoleSelect(&bottomScreen);
+	// Then clear the console.
+	consoleClear();
 }
 
 /*

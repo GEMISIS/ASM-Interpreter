@@ -3,6 +3,9 @@
 #include "neocompoLogo.h"
 #include "devLogo.h"
 
+/*
+ * Displays the logos for NeoCompo 2013.
+ */
 void displayCompoLogo()
 {
 	// Set the video mode for the top and bottom screens to support extended background layers.
@@ -198,7 +201,7 @@ void getKeyboardInput(char** input, int maxInputLength, bool newlineCharacterAll
 
 		// Wait while the character is not negative or the file name length
 		// is greater than MAX_CUST_FILE_NAME_LEN.
-		while((character > -2 || character == -20 || character == -18) && position < MAX_CUST_FILE_NAME_LEN)
+		while((character > -2 || character ==  DVK_LEFT || character == DVK_RIGHT || character == DVK_SHIFT) && position < MAX_CUST_FILE_NAME_LEN)
 		{
 			if(blinkCounter > 15)
 			{
@@ -231,7 +234,7 @@ void getKeyboardInput(char** input, int maxInputLength, bool newlineCharacterAll
 				// Set the current character to the typed character.
 				(*input)[position] = character;
 				// Check if the character is the backspace character.
-				if(character == 8)
+				if(character == 8 && position > 0)
 				{
 					// Set the current letter to be null terminated.
 					(*input)[position] = '\0';
@@ -310,7 +313,7 @@ void promptForFile(char** fileName)
 	iprintf("A for Yes and B for No\n");
 
 	// Wait for the B button to be pressed.
-	while(!(keysDown() & KEY_B))
+	while(!(keysDown() & KEY_B) && !(keysDown() & KEY_A))
 	{
 		// Scan the keypad.
 		scanKeys();
@@ -318,6 +321,8 @@ void promptForFile(char** fileName)
 		// Check if the A button was pressed.
 		if(keysDown() & KEY_A)
 		{
+			// Select the top console's registers section.
+			consoleSelect(&topScreenRegisters);
 			// If so, print out the next bit of info for
 			// giving a file name.
 			iprintf("Max file name length is\n");
@@ -334,10 +339,13 @@ void promptForFile(char** fileName)
 			// Get keyboard input here.
 			getKeyboardInput(fileName, MAX_CUST_FILE_NAME_LEN, false);
 
+			// Select the top console's registers section.
+			consoleSelect(&topScreenRegisters);
+			// Then clear the console.
+			consoleClear();
+
 			// Select the bottom console.
 			consoleSelect(&bottomScreen);
-
-			break;
 		}
 		swiWaitForVBlank();
 	}
@@ -352,11 +360,11 @@ void promptForFileArgs(char** arguments)
 	// Ask the user if they would like to type a file name
 	// and state the commands for doing so.
 	iprintf("Would you like to\n");
-	iprintf("type in a file args?\n");
+	iprintf("type in file args?\n");
 	iprintf("A for Yes and B for No\n");
 
 	// Wait for the B button to be pressed.
-	while(!(keysDown() & KEY_B))
+	while(!(keysDown() & KEY_B) && !(keysDown() & KEY_A))
 	{
 		// Scan the keypad.
 		scanKeys();
@@ -364,6 +372,8 @@ void promptForFileArgs(char** arguments)
 		// Check if the A button was pressed.
 		if(keysDown() & KEY_A)
 		{
+			// Select the top console's registers section.
+			consoleSelect(&topScreenRegisters);
 			// If so, print out the next bit of info for
 			// giving a file name.
 			iprintf("Max file arguments length is\n");
@@ -380,10 +390,13 @@ void promptForFileArgs(char** arguments)
 			// Get keyboard input here.
 			getKeyboardInput(arguments, MAX_CUST_FILE_ARGS_LEN, true);
 
+			// Select the top console's registers section.
+			consoleSelect(&topScreenRegisters);
+			// Then clear the console.
+			consoleClear();
+
 			// Select the bottom console.
 			consoleSelect(&bottomScreen);
-
-			break;
 		}
 		swiWaitForVBlank();
 	}

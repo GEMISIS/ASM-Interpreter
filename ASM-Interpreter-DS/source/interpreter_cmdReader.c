@@ -167,6 +167,20 @@ int loadProgram(bool showDebug, char* program)
 		memset(args[j], '\0', MAX_ARG_LEN);
 	}
 
+	// Reset the AC register.
+	reg_ac = 0;
+
+	// Resest the normal registers.
+	for(j = 0;j < MAX_REG;j += 1)
+	{
+		registers[j] = 0;
+	}
+	// Reset the memory locations.
+	for(j = 0;j < MAX_MEM;j += 1)
+	{
+		memory[j] = 0;
+	}
+
 	/*
 	 * So long as there is a character to read and the state is not
 	 * validating and storing, going through the program.

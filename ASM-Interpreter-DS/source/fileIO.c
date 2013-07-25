@@ -1,6 +1,33 @@
 #include "fileIO.h"
 
 /*
+ * Saves a file buffer to a file.
+ * @param fileName The name of the file to create.
+ * @param fileBuffer The file buffer to save.
+ * @return Returns files size on success, otherwise it returns -1.
+ */
+unsigned int saveFile(const char* fileName, char** fileBuffer)
+{
+	// Create a new file with the chosen file name.
+	FILE* file = fopen(fileName, "wb");
+
+	// Check that the file opened correctly.
+	if(file)
+	{
+		// Write the file buffer to the file.
+		fwrite(*fileBuffer, sizeof(char), strlen(*fileBuffer), file);
+
+		// Close the file.
+		fclose(file);
+
+		// Finally, return the size of the file.
+		return (sizeof(char) * strlen(*fileBuffer));
+	}
+	// Return -1 if the file was not found.
+	return -1;
+}
+
+/*
  * Loads a file to a file buffer and returns the file size.
  * @param fileName The name of the file to load.
  * @param fileBuffer The file buffer to store the file to.
