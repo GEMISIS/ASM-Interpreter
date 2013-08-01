@@ -6,7 +6,9 @@ memory and registers of the interpreter live.  Using the right arrow
 key, you can go through your program line by line and watch it update,
 or you can press the B button to have it perform your full program
 without any pauses. I have included some simple test files with
-this program.
+this program.  When creating programs within this application, you
+can also use the up and down keys to scroll up and down the text on
+the screen.
 
 Please note that this requires the devkitArm and libnds library
 that is included in devkitPro to compile.
