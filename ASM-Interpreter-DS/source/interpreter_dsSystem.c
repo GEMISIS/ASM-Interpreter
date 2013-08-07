@@ -1,5 +1,6 @@
 #include "interpreter_dsSystem.h"
 
+#include <unistd.h>
 #include <dirent.h>
 
 #include "neocompoLogo.h"
@@ -146,7 +147,7 @@ void initializeSystem()
 		if(nitroFSInit(NULL))
 		{
 			// Print done if successful.
-			iprintf(".done!\n");
+			iprintf(".done!(NITRO)\n");
 		}
 		else
 		{
@@ -157,7 +158,7 @@ void initializeSystem()
 	else
 	{
 		// Print done if it was successful.
-		iprintf("..unable to load the file system!\n");
+		iprintf("..done!(FAT)\n");
 	}
 }
 
@@ -481,7 +482,7 @@ u32 listFiles(const char* startDirectory, directoryEntry** fileNames)
 void openFileBrowser(char** fileName)
 {
 	directoryEntry* fileNames = NULL;
-	u32 filesCount = listFiles("./", &fileNames);
+	u32 filesCount = listFiles("/", &fileNames);
 
 	int line = 0;
 	int offset = 0;
@@ -505,7 +506,13 @@ void openFileBrowser(char** fileName)
 				line = 0;
 				offset = 0;
 
+				for(int i = 0;i < filesCount;i += 1)
+				{
+					memset(fileNames[i].name, '\0', strlen(fileNames[i].name));
+				}
+
 				filesCount = listFiles(dir, &fileNames);
+				chdir(dir);
 
 				free(dir);
 				dir = NULL;

@@ -78,6 +78,8 @@ int main(int argc, char* argv[])
 
 void mainProgramLoop(char* fileName)
 {
+	// Make sure the starting directory is the root directory.
+	chdir("/");
 	// Prompt the user to run or create a program.
 	iprintf("Press A to run a program\nPress B to create a program\nPress Start to exit.");
 
